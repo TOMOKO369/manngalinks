@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4コマ漫画構成メーカー</title>
+    
+    <!-- OGP meta tags -->
+    <meta property="og:title" content="4コマ漫画構成メーカー">
+    <meta property="og:description" content="AIが自動で4コマ漫画の構成とセリフを生成します。起承転結の構成案とキャラクター設定に合わせたセリフ提案機能付き。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    <meta property="og:site_name" content="4コマ漫画構成メーカー">
+    <meta name="description" content="AIが自動で4コマ漫画の構成とセリフを生成します。起承転結の構成案とキャラクター設定に合わせたセリフ提案機能付き。">
+    <meta name="keywords" content="4コマ漫画,構成,セリフ,AI,自動生成,起承転結">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="4コマ漫画構成メーカー">
+    <meta name="twitter:description" content="AIが自動で4コマ漫画の構成とセリフを生成します。">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', Meiryo, メイリオ, Osaka, 'MS PGothic', arial, helvetica, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .character-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+
+        .manga-panel {
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .panel-number {
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .panel-scene {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .panel-dialogue {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .saved-compositions {
+            margin-top: 30px;
+        }
+
+        .saved-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .saved-item-title {
+            font-weight: bold;
+            flex-grow: 1;
+        }
+
+        .saved-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .input-section,
+            .output-section {
+                padding: 20px;
+            }
+
+            .character-settings {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .input-section,
+            .output-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📚 4コマ漫画構成メーカー</h1>
+            <p>AIが自動で起承転結の構成とセリフを生成します</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>🛠️ 4コマ設定</h2>
+                
+                <div class="form-group">
+                    <label for="theme">📝 ネタのテーマ</label>
+                    <input type="text" id="theme" placeholder="例：講座を読まない女" />
+                </div>
+
+                <div class="form-group">
+                    <label for="character-count">👥 登場人物の数</label>
+                    <select id="character-count">
+                        <option value="1">1人</option>
+                        <option value="2" selected>2人</option>
+                        <option value="3">3人</option>
+                        <option value="4">4人</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🎭 登場人物の性格設定</label>
+                    <div id="character-settings" class="character-settings">
+                        <select class="character-personality">
+                            <option value="皮肉屋">皮肉屋</option>
+                            <option value="やる気ゼロ女子">やる気ゼロ女子</option>
+                            <option value="真面目系">真面目系</option>
+                            <option value="マイペース">マイペース</option>
+                            <option value="ツッコミ系">ツッコミ系</option>
+                            <option value="天然系">天然系</option>
+                            <option value="熱血系">熱血系</option>
+                            <option value="クール系">クール系</option>
+                        </select>
+                        <select class="character-personality">
+                            <option value="やる気ゼロ女子">やる気ゼロ女子</option>
+                            <option value="皮肉屋">皮肉屋</option>
+                            <option value="真面目系">真面目系</option>
+                            <option value="マイペース">マイペース</option>
+                            <option value="ツッコミ系">ツッコミ系</option>
+                            <option value="天然系">天然系</option>
+                            <option value="熱血系">熱血系</option>
+                            <option value="クール系">クール系</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tone">🎨 漫画のテイスト</label>
+                    <select id="tone">
+                        <option value="ギャグ">ギャグ</option>
+                        <option value="毒舌">毒舌</option>
+                        <option value="ほのぼの">ほのぼの</option>
+                        <option value="シュール">シュール</option>
+                        <option value="日常系">日常系</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sarcasm-level">🌶️ 毒舌度 (1-10)</label>
+                    <input type="range" id="sarcasm-level" min="1" max="10" value="5" />
+                    <div style="text-align: center; margin-top: 5px;">
+                        <span id="sarcasm-value">5</span>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateManga()">
+                    ✨ 4コマ構成を作成
+                </button>
+
+                <button class="btn btn-secondary" onclick="generateRandomExample()">
+                    🎲 ランダム例ネタで生成
+                </button>
+            </div>
+
+            <div class="output-section">
+                <h2>📖 生成された4コマ構成</h2>
+                <div id="output">
+                    <div class="empty-state">
+                        <p>👈 左側の設定を入力して「作成」ボタンを押してください</p>
+                    </div>
+                </div>
+
+                <div class="saved-compositions">
+                    <h3>💾 保存済み構成</h3>
+                    <div id="saved-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const characterPersonalities = {
+            '皮肉屋': {
+                patterns: ['...はぁ、{context}', 'そりゃそうでしょうね', 'まぁ予想通りですね', '典型的な{situation}ですね'],
+                traits: ['皮肉っぽい', '斜に構えた', '冷静で辛辣']
+            },
+            'やる気ゼロ女子': {
+                patterns: ['めんどくさ〜い', 'えー、{context}なの？', 'やだー、{situation}じゃん', 'ムリムリ〜'],
+                traits: ['面倒くさがり', 'のんびり', 'やる気がない']
+            },
+            '真面目系': {
+                patterns: ['それは{context}ですね', '手順通りに{action}しましょう', 'きちんと{context}すべきです', '規則では{rule}となっています'],
+                traits: ['真面目', '規則正しい', '責任感強い']
+            },
+            'マイペース': {
+                patterns: ['あ、{context}だ〜', 'ふーん、{situation}なんだね', 'のんびり{action}しよう', 'まったり{context}'],
+                traits: ['のんびり', '自分のペース', '穏やか']
+            },
+            'ツッコミ系': {
+                patterns: ['ちょっと待て！', 'それおかしくない？', 'なんでそうなる？', '{context}って何！？'],
+                traits: ['ツッコミ上手', '的確な指摘', '反応が早い']
+            },
+            '天然系': {
+                patterns: ['えっと...{context}？', 'あれ？{situation}だっけ？', 'ん〜、よくわからない', '不思議だね〜'],
+                traits: ['天然', '純粋', 'ほんわか']
+            },
+            '熱血系': {
+                patterns: ['よし！{action}だ！', '燃えてきた！', 'がんばろう！', '絶対{goal}するぞ！'],
+                traits: ['情熱的', 'エネルギッシュ', '前向き']
+            },
+            'クール系': {
+                patterns: ['{context}ですね', '...そうですか', '特に{feeling}はありません', '理解できません'],
+                traits: ['冷静', '感情を表に出さない', '論理的']
+            }
+        };
+
+        const exampleThemes = [
+            '講座を読まない女',
+            'リモートワークの罠',
+            'インスタ映えの現実',
+            'ダイエットの誘惑',
+            'スマホ依存症',
+            '在宅勤務の日常',
+            'ネット通販の失敗',
+            'アプリの使い方がわからない',
+            '新しいカフェでの出来事',
+            'ペットとの生活'
+        ];
+
+        let savedCompositions = JSON.parse(localStorage.getItem('mangaCompositions') || '[]');
+
+        function updateCharacterSettings() {
+            const count = parseInt(document.getElementById('character-count').value);
+            const container = document.getElementById('character-settings');
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const select = document.createElement('select');
+                select.className = 'character-personality';
+                select.innerHTML = `
+                    <option value="皮肉屋">皮肉屋</option>
+                    <option value="やる気ゼロ女子">やる気ゼロ女子</option>
+                    <option value="真面目系">真面目系</option>
+                    <option value="マイペース">マイペース</option>
+                    <option value="ツッコミ系">ツッコミ系</option>
+                    <option value="天然系">天然系</option>
+                    <option value="熱血系">熱血系</option>
+                    <option value="クール系">クール系</option>
+                `;
+                container.appendChild(select);
+            }
+        }
+
+        function updateSarcasmValue() {
+            const value = document.getElementById('sarcasm-level').value;
+            document.getElementById('sarcasm-value').textContent = value;
+        }
+
+        function generateManga() {
+            const theme = document.getElementById('theme').value;
+            const tone = document.getElementById('tone').value;
+            const sarcasmLevel = parseInt(document.getElementById('sarcasm-level').value);
+            
+            if (!theme.trim()) {
+                showToast('テーマを入力してください', 'error');
+                return;
+            }
+
+            const personalities = Array.from(document.querySelectorAll('.character-personality')).map(select => select.value);
+            
+            showLoading();
+            
+            setTimeout(() => {
+                const composition = generateComposition(theme, personalities, tone, sarcasmLevel);
+                displayComposition(composition);
+            }, 1000);
+        }
+
+        function generateRandomExample() {
+            const randomTheme = exampleThemes[Math.floor(Math.random() * exampleThemes.length)];
+            document.getElementById('theme').value = randomTheme;
+            
+            const personalities = ['皮肉屋', 'やる気ゼロ女子'];
+            const tone = 'ギャグ';
+            const sarcasmLevel = Math.floor(Math.random() * 5) + 3;
+            
+            document.getElementById('tone').value = tone;
+            document.getElementById('sarcasm-level').value = sarcasmLevel;
+            updateSarcasmValue();
+            
+            showLoading();
+            
+            setTimeout(() => {
+                const composition = generateComposition(randomTheme, personalities, tone, sarcasmLevel);
+                displayComposition(composition);
+            }, 1000);
+        }
+
+        function generateComposition(theme, personalities, tone, sarcasmLevel) {
+            const panels = [];
+            
+            const situations = [
+                { type: '起', description: '問題や状況の提示' },
+                { type: '承', description: '状況の展開' },
+                { type: '転', description: '予想外の展開' },
+                { type: '結', description: 'オチ・結論' }
+            ];
+
+            const themeContext = {
+                '講座を読まない女': {
+                    scenes: ['PC前でふてくされた顔', '説明する講師', '別の質問をする', '逆ギレ気味に笑顔'],
+                    keywords: ['講座', '読まない', '質問', '飽きる']
+                },
+                default: {
+                    scenes: ['導入シーン', '問題発生', '混乱・驚き', '結論・オチ'],
+                    keywords: ['状況', '問題', '解決', '結果']
+                }
+            };
+
+            const context = themeContext[theme] || themeContext.default;
+
+            for (let i = 0; i < 4; i++) {
+                const panel = {
+                    number: i + 1,
+                    type: situations[i].type,
+                    scene: context.scenes[i] || `シーン${i + 1}`,
+                    dialogues: []
+                };
+
+                const numDialogues = Math.random() > 0.5 ? 2 : 1;
+                
+                for (let j = 0; j < numDialogues && j < personalities.length; j++) {
+                    const personality = personalities[j % personalities.length];
+                    const dialogue = generateDialogue(personality, theme, i, sarcasmLevel, tone);
+                    panel.dialogues.push({
+                        character: `${personality}キャラ`,
+                        text: dialogue
+                    });
+                }
+
+                panels.push(panel);
+            }
+
+            return {
+                theme,
+                tone,
+                personalities,
+                sarcasmLevel,
+                panels,
+                createdAt: new Date().toISOString()
+            };
+        }
+
+        function generateDialogue(personality, theme, panelIndex, sarcasmLevel, tone) {
+            const personalityData = characterPersonalities[personality];
+            const patterns = personalityData.patterns;
+            
+            const dialoguesByPanel = {
+                0: { // 起
+                    '皮肉屋': [`はぁ...${theme}の件ですか`, `また${theme}の話ですね`, `予想通り${theme}で困ってますね`],
+                    'やる気ゼロ女子': [`ねぇ、${theme}なんだけど〜`, `めんどくさ〜い、${theme}って`, `えー、${theme}できないよ〜`],
+                    '真面目系': [`${theme}について説明しますね`, `${theme}の手順は...`, `きちんと${theme}を理解しましょう`],
+                    default: [`${theme}のことで...`, `これって${theme}?`, `${theme}について教えて`]
+                },
+                1: { // 承
+                    '皮肉屋': [`それは当然の結果でしょうね`, `まぁ、そうなりますよね`, `典型的なパターンです`],
+                    'やる気ゼロ女子': [`へぇ〜そうなんだ`, `ふーん、よくわかんない`, `そういうものなの？`],
+                    '真面目系': [`手順通りに進めましょう`, `規則では○○となっています`, `正しい方法は...`],
+                    default: [`なるほど`, `そうですね`, `わかりました`]
+                },
+                2: { // 転
+                    '皮肉屋': [`...あ、そういうことですか`, `はいはい、予想通り`, `やっぱりそうきましたか`],
+                    'やる気ゼロ女子': [`えっ！？そうなの？`, `やだー、ムリムリ〜`, `そんなのできないよ〜`],
+                    '真面目系': [`それは間違いです`, `正しくは...`, `規則に反しています`],
+                    default: [`えっ？`, `まさか`, `そんな！`]
+                },
+                3: { // 結
+                    '皮肉屋': [`結局そういうオチですか`, `まぁ、そうなりますよね`, `やっぱりね`],
+                    'やる気ゼロ女子': [`全部やって！読んでないもん〜`, `飽きちゃうから無理〜`, `めんどくさいからパス！`],
+                    '真面目系': [`きちんと学習しましょう`, `基本から始めるべきです`, `ルールは守りましょう`],
+                    default: [`そういうことね`, `なるほど`, `わかった`]
+                }
+            };
+
+            const panelDialogues = dialoguesByPanel[panelIndex];
+            const personalityDialogues = panelDialogues[personality] || panelDialogues.default;
+            
+            let dialogue = personalityDialogues[Math.floor(Math.random() * personalityDialogues.length)];
+            
+            if (sarcasmLevel > 7 && personality === '皮肉屋') {
+                dialogue = `...${dialogue}（はぁ）`;
+            } else if (sarcasmLevel < 3 && tone === 'ほのぼの') {
+                dialogue = dialogue.replace(/[！？]/, '♪');
+            }
+
+            return dialogue;
+        }
+
+        function displayComposition(composition) {
+            const output = document.getElementById('output');
+            
+            let html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>🎯 テーマ：${composition.theme}</h3>
+                    <div>
+                        <button class="btn btn-small" onclick="saveComposition(${JSON.stringify(composition).replace(/"/g, '&quot;')})">💾 保存</button>
+                        <button class="btn btn-small" onclick="copyComposition(${JSON.stringify(composition).replace(/"/g, '&quot;')})">📤 コピー</button>
+                    </div>
+                </div>
+            `;
+
+            composition.panels.forEach(panel => {
+                html += `
+                    <div class="manga-panel">
+                        <div class="panel-number">🖼️ コマ${panel.number}（${panel.type}）</div>
+                        <div class="panel-scene">場面：${panel.scene}</div>
+                        <div class="panel-dialogue">
+                            <strong>セリフ：</strong><br>
+                            ${panel.dialogues.map(d => `${d.character}「${d.text}」`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            output.innerHTML = html;
+        }
+
+        function showLoading() {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <div class="loading">
+                    <p>🤖 AI が構成を生成中...</p>
+                    <p>しばらくお待ちください</p>
+                </div>
+            `;
+        }
+
+        function saveComposition(composition) {
+            const id = Date.now().toString();
+            const savedItem = {
+                id,
+                title: composition.theme,
+                composition,
+                savedAt: new Date().toISOString()
+            };
+            
+            savedCompositions.unshift(savedItem);
+            localStorage.setItem('mangaCompositions', JSON.stringify(savedCompositions));
+            
+            updateSavedList();
+            showToast('構成を保存しました');
+        }
+
+        function copyComposition(composition) {
+            let text = `🎯 テーマ：${composition.theme}\n\n`;
+            
+            composition.panels.forEach(panel => {
+                text += `🖼️ コマ${panel.number}（${panel.type}）：\n`;
+                text += `場面：${panel.scene}\n`;
+                text += `セリフ：\n`;
+                panel.dialogues.forEach(d => {
+                    text += `${d.character}「${d.text}」\n`;
+                });
+                text += '\n';
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('クリップボードにコピーしました');
+            }).catch(() => {
+                showToast('コピーに失敗しました', 'error');
+            });
+        }
+
+        function loadComposition(id) {
+            const item = savedCompositions.find(s => s.id === id);
+            if (item) {
+                displayComposition(item.composition);
+                showToast('構成を読み込みました');
+            }
+        }
+
+        function deleteComposition(id) {
+            if (confirm('この構成を削除しますか？')) {
+                savedCompositions = savedCompositions.filter(s => s.id !== id);
+                localStorage.setItem('mangaCompositions', JSON.stringify(savedCompositions));
+                updateSavedList();
+                showToast('構成を削除しました');
+            }
+        }
+
+        function updateSavedList() {
+            const container = document.getElementById('saved-list');
+            
+            if (savedCompositions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">保存された構成がありません</p>';
+                return;
+            }
+
+            let html = '';
+            savedCompositions.slice(0, 5).forEach(item => {
+                const date = new Date(item.savedAt).toLocaleDateString('ja-JP');
+                html += `
+                    <div class="saved-item">
+                        <div class="saved-item-title">${item.title}</div>
+                        <div style="font-size: 0.8rem; color: #666;">${date}</div>
+                        <div class="saved-item-actions">
+                            <button class="btn btn-small" onclick="loadComposition('${item.id}')">読込</button>
+                            <button class="btn btn-small" onclick="deleteComposition('${item.id}')">削除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.getElementById('character-count').addEventListener('change', updateCharacterSettings);
+        document.getElementById('sarcasm-level').addEventListener('input', updateSarcasmValue);
+
+        updateCharacterSettings();
+        updateSavedList();
+    </script>
+</body>
+</html>
